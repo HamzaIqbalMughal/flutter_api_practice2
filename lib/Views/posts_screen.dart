@@ -38,7 +38,7 @@ class _PostsScreenState extends State<PostsScreen> {
       appBar: AppBar(
         title: const Text('Posts'),
         centerTitle: true,
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.blue,
       ),
       body: SafeArea(
         child: Column(
@@ -51,10 +51,8 @@ class _PostsScreenState extends State<PostsScreen> {
                     return ListView.builder(
                       itemCount: postsList.length,
                       itemBuilder: (context, index) {
-                        // return Card(
-                        //
-                        // );
                         return ListTile(
+
                           contentPadding: EdgeInsets.all(0),
                           leading: const CircleAvatar(
                             radius: 40,
@@ -65,9 +63,15 @@ class _PostsScreenState extends State<PostsScreen> {
                           title: Text(snapshot.data![index].title.toString()),
                           // dense: true,
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ViewPostScreen(postModel: snapshot.data![index])));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ViewPostScreen(
+                                    postModel: snapshot.data![index],
+                                    postNumber: index + 1),
+                              ),
+                            );
                           },
-
                           subtitle: Text("Post # ${index + 1}"),
                         );
                       },
