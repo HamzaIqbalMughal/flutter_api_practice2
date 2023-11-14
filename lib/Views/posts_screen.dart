@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_api_practice2/Models/post_model.dart';
 import 'package:flutter_api_practice2/Views/view_post_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 
 class PostsScreen extends StatefulWidget {
@@ -32,6 +33,19 @@ class _PostsScreenState extends State<PostsScreen> {
     }
   }
 
+  String baseUrlOfInitials = 'https://api.dicebear.com/7.x/initials/svg?seed=';
+
+  Future<String> getInitialsImage(String name) async {
+    final response = await http.get(Uri.parse(
+        baseUrlOfInitials + name + '&radius=50&backgroundType=gradientLinear'));
+
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      throw Exception('Failed to load SVG from the API');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,30 +58,51 @@ class _PostsScreenState extends State<PostsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: FutureBuilder(
+              child: FutureBuilder<List<PostModel>>(
                 future: getPosts(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
+                builder:
+                    (context, AsyncSnapshot<List<PostModel>> snapshotPost) {
+                  if (snapshotPost.hasData) {
                     return ListView.builder(
                       itemCount: postsList.length,
                       itemBuilder: (context, index) {
                         return ListTile(
-
                           contentPadding: EdgeInsets.all(0),
-                          leading: const CircleAvatar(
+                          leading: CircleAvatar(
                             radius: 40,
-                            backgroundImage: NetworkImage(
-                              'https://api.dicebear.com/7.x/adventurer/svg?seed=Chester',
+                            child: FutureBuilder<String>(
+                              future: getInitialsImage(
+                                  snapshotPost.data![index].title.toString()),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  return SvgPicture.string(
+                                    snapshot.data.toString(),
+                                    fit: BoxFit.contain,
+                                  );
+                                } else {
+                                  return CircularProgressIndicator();
+                                }
+                                // if(snapshot.connectionState == ConnectionState.waiting){
+                                //   return CircularProgressIndicator();
+                                // }
+                                // else if(snapshot.hasData){
+                                //   return SvgPicture.string(snapshot.data.toString());
+                                // }
+                                // else{
+                                //
+                                // }
+                              },
                             ),
                           ),
-                          title: Text(snapshot.data![index].title.toString()),
+                          title:
+                              Text(snapshotPost.data![index].title.toString()),
                           // dense: true,
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ViewPostScreen(
-                                    postModel: snapshot.data![index],
+                                    postModel: snapshotPost.data![index],
                                     postNumber: index + 1),
                               ),
                             );
